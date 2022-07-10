@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+.mypy_cache
 
 # Ignore the usual stuff
 venv
@@ -9,7 +10,7 @@ venv
 .env
 
 # Ignore secret! (if they exist)
-secret
+secrets
 
 
 # Ignore logs (let each machine have its own)
