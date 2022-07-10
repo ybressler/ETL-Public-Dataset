@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Ignore the usual stuff
+venv
+*.pyc
+.DS_Store
+.env
+
+# Ignore secret! (if they exist)
+secret
+
+
+# Ignore logs (let each machine have its own)
+logs/
+tmp/
