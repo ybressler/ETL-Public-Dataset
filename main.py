@@ -14,6 +14,7 @@ from extract.models.crashes import CrashRecord
 #         data = json.load(f)
 #     all_data.extend(data)
 #
+#
 # all_data = [CrashRecord.parse_obj(x) for x in all_data]
 
 
