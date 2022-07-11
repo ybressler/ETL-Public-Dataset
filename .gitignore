@@ -16,3 +16,6 @@ secrets
 # Ignore logs (let each machine have its own)
 logs/
 tmp/
+
+# Ignore data
+data/

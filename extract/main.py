@@ -1,10 +1,16 @@
 """
 Extracts data from Motor Vehicle collision datasets
-"""
-import requests
-from datetime import datetime
-from config import NYC_OPEN_DATA_API_APP_TOKEN
 
+ToDo:
+    Add a logging agent
+"""
+import os
+import json
+from datetime import datetime, timezone
+import requests
+from typing import List
+
+from config import NYC_OPEN_DATA_API_APP_TOKEN
 from .models.crashes import CrashRecord
 from .models.enums import DATA_SOURCES
 
@@ -43,13 +49,11 @@ def get_min_and_max_dates(session: requests.Session):
     return result
 
 
-# Get min and max dates for each data source
-# min_max_dates = get_min_and_max_dates(session)
 def extract_data(
     data_source: DATA_SOURCES,
     extract_start_time: datetime = None,
     extract_end_time: datetime = None
-    ):
+    ) -> List[CrashRecord]:
     """
     Extract data from a given data source.
 
@@ -62,18 +66,15 @@ def extract_data(
     offset = 0
     increments = 50_000
 
-    params={
+    params = {
         "$offset": offset,
-        "$limit": increments,
-        "$where": "vehicle_type_code1 = 'Sedan' and borough = 'BROOKLYN'"
+        "$limit": increments
     }
 
     all_records = []
 
     while True:
 
-
-        # Let's paginate
         results = session.get(base_urls[data_source], params=params)
         data = results.json()
 
@@ -84,13 +85,45 @@ def extract_data(
         if not records:
             break
 
-        # Save locally – in the cloud, we would save to S3
         all_records.extend(records)
 
         # Increase the offset count
         params["$offset"] += increments
 
-        # print(records)
-
     # How many records u got?
-    print(len(all_records))
+    return all_records
+
+
+def save_data(data_source: DATA_SOURCES, records: List[CrashRecord]):
+    """
+    Saves data locally – in the cloud, we would save to S3
+
+    Args:
+        data_source: name of a data source you'd like to extract
+        records: List of records to save
+
+    ToDo: In the future, provide more options to save the data.
+    """
+
+    records = [x.dict() for x in records]
+    print(f'{len(records)=}')
+    curr_datetime = datetime.now(timezone.utc)
+    curr_datetime_path = curr_datetime.strftime('%Y-%m-%d/%H-%M-%S')
+    save_path = f'./data/{data_source}/{curr_datetime_path}'
+
+    # Make the path
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+    i = 1
+    n_records_per_file = 50_000
+    while records:
+        file_path = f'{save_path}_part_{i}.json'
+        with open(file_path, 'w') as f:
+            json.dump(records[:n_records_per_file], f, default=str)
+
+        # Iterate
+        if n_records_per_file >= len(records):
+            break
+        else:
+            records = records[n_records_per_file:]
+            i += 1
