@@ -10,14 +10,10 @@ from datetime import datetime, timezone
 import requests
 from typing import List
 
-from config import NYC_OPEN_DATA_API_APP_TOKEN
-from .models.crashes import CrashRecord
-from .models.enums import DATA_SOURCES
+from config import NYC_OPEN_DATA_API_APP_TOKEN, data_sources
+import models
+from models.enums import DATA_SOURCES
 
-base_urls = {
-    "crashes": "https://data.cityofnewyork.us/resource/h9gi-nx95.json",
-    "vehicles": "https://data.cityofnewyork.us/resource/bm4k-52h4.json"
-}
 
 
 # data_date_range = {}
@@ -36,8 +32,8 @@ def get_min_and_max_dates(session: requests.Session):
         "$select":"MIN(crash_date), MAX(crash_date)"
     }
 
-    for key in base_urls:
-        results = session.get(base_urls[key], params=params)
+    for key in data_sources:
+        results = session.get(data_sources[key]["api_endpoint"], params=params)
         min_date, max_date = map(datetime.fromisoformat, results.json()[0].values())
 
         # Update your dict
@@ -53,7 +49,7 @@ def extract_data(
     data_source: DATA_SOURCES,
     extract_start_time: datetime = None,
     extract_end_time: datetime = None
-    ) -> List[CrashRecord]:
+    ) -> List:
     """
     Extract data from a given data source.
 
@@ -71,15 +67,17 @@ def extract_data(
         "$limit": increments
     }
 
-    all_records = []
+    api_endpoint = data_sources[data_source]["api_endpoint"]
+    response_model = data_sources[data_source]["response_model"]
 
+    all_records = []
     while True:
 
-        results = session.get(base_urls[data_source], params=params)
+        results = session.get(api_endpoint, params=params)
         data = results.json()
 
         # clean em up
-        records = [CrashRecord.parse_obj(x) for x in data]
+        records = [response_model.parse_obj(x) for x in data]
 
         # No records, you are at the end
         if not records:
@@ -94,7 +92,7 @@ def extract_data(
     return all_records
 
 
-def save_data(data_source: DATA_SOURCES, records: List[CrashRecord]):
+def save_data(data_source: DATA_SOURCES, records: List):
     """
     Saves data locally – in the cloud, we would save to S3
 
@@ -106,7 +104,7 @@ def save_data(data_source: DATA_SOURCES, records: List[CrashRecord]):
     """
 
     records = [x.dict() for x in records]
-    print(f'{len(records)=}')
+
     curr_datetime = datetime.now(timezone.utc)
     curr_datetime_path = curr_datetime.strftime('%Y-%m-%d/%H-%M-%S')
     save_path = f'./data/{data_source}/{curr_datetime_path}'

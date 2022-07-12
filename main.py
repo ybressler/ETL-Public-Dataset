@@ -1,10 +1,13 @@
 """Entry point for the application"""
 
 from extract import main
+from load.main import Loader
 import json
 import os
 
-from extract.models.crashes import CrashRecord
+from config import data_sources
+
+from models.crashes import CrashRecord
 
 # base_path = 'data/crashes/2022-07-11'
 # all_files = os.listdir(base_path)
@@ -19,5 +22,17 @@ from extract.models.crashes import CrashRecord
 
 
 if __name__ =='__main__':
-    records = main.extract_data("crashes")
-    main.save_data("crashes", records)
+
+    # Eventually, will allow all sources
+    for key in ["crashes"]:
+
+        # Extract
+        records = main.extract_data(key)
+
+        # Save locally, a bit extra IO, but helps if
+        # you want to break into discrete steps
+        main.save_data(key, records)
+
+        # Load the data into the DB
+        loader = Loader()
+        loader.load_data(key)

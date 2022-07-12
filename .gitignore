@@ -19,3 +19,9 @@ tmp/
 
 # Ignore data
 data/
+
+# Ignore migrations
+database/**/alembic/versions/
+
+# Ignore state files
+load_state.json

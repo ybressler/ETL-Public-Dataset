@@ -12,11 +12,14 @@ For this configuration parser to work, you must do the following:
     [nyc_open_data]
     APP_TOKEN=****
     APP_SECRET_TOKEN=****
+
+    [database]
+    DB_URI=****
     ```
 """
 import os
 import configparser
-
+import models
 
 STAGE = os.environ.get('STAGE', 'local')
 secrets_path = f'secrets/{STAGE}.ini'
@@ -28,8 +31,25 @@ if not os.path.isfile(secrets_path):
 cfg = configparser.ConfigParser()
 cfg.read(secrets_path)
 
-# NYC_OPEN_DATA_API_KEY_ID = cfg['nyc_open_data']['api_key_id']
-# NYC_OPEN_DATA_API_KEY_SECRET = cfg['nyc_open_data']['api_key_secret']
-
+# get API connection
 NYC_OPEN_DATA_API_APP_TOKEN = cfg['nyc_open_data']['app_token']
 NYC_OPEN_DATA_API_APP_SECRET_TOKEN = cfg['nyc_open_data']['app_secret_token']
+
+# Get DB connection
+DB_URI = cfg['database'].get('DB_URI', 'postgresql://postgres:@localhost:5430/db')
+
+
+data_sources = {
+    "crashes": {
+        "api_endpoint": "https://data.cityofnewyork.us/resource/h9gi-nx95.json",
+        "response_model": models.crashes.CrashRecord
+    },
+    "vehicles": {
+        "api_endpoint": "https://data.cityofnewyork.us/resource/bm4k-52h4.json",
+        "response_model": models.vehicles.CrashVehicleRecord
+    },
+    "person": {
+        "api_endpoint": "https://data.cityofnewyork.us/resource/f55k-p6yu.json",
+        "response_model": models.person.CrashPersonRecord
+    },
+}

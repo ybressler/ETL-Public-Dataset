@@ -1,4 +1,4 @@
-"""Pydantic models for expected API result from Crashes API"""
+"""Pydantic models for expected API result from Motor Vehicle Collisions - Crashes API"""
 from datetime import date, time, datetime
 from pydantic import BaseModel, Field, validator, root_validator
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, validator, root_validator
 class CrashRecord(BaseModel):
     """
     Pydantic class for modelling API responses
-    from NYC Open Data's Motor Vehicle Collisions - Crashes
+    from NYC Open Data's Motor Vehicle Collisions - Vehicles
 
     Documentation: https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95
 
@@ -70,7 +70,7 @@ class CrashRecord(BaseModel):
             #  f'3 cannot be null: {location_fields}'
         else:
             values['is_valid'] = True
-                
+
         return values
 
     @validator("crash_date_time", always=True)
