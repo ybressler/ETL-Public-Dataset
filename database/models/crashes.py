@@ -24,7 +24,7 @@ class CrashRecord(Base):
     This needs to be refactored (and replaced by somethign more meaningful)
     """
 
-    __tablename__ = "crash_record"
+    __tablename__ = "crash_records"
 
     # Primary key first
     collision_id = Column(Integer, primary_key=True, autoincrement=False, nullable=False)
