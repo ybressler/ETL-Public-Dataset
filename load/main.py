@@ -5,6 +5,10 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import List
 
+from rich.progress import Progress
+from logger import console
+
+
 import models
 from config import data_sources
 from models.enums import DATA_SOURCES
@@ -92,39 +96,47 @@ class Loader:
 
         # We will only get the most recent one – for now (fix later)
         visit_dir = max(visit_dirs)
+        all_paths = os.listdir(visit_dir)
 
-        # Load the files in this directory
-        for path in os.listdir(visit_dir):
-            file_path = f'{visit_dir}/{path}'
+        with Progress(console=console) as progress:
 
-            # Don't visit the same file 2x
-            if file_path in self.state[data_source]:
-                continue
+            task = progress.add_task(f"Loading data into the DB for {data_source=}", total=len(all_paths))
 
-            # get the raw data
-            with open(file_path, 'r') as f:
-                data = json.load(f)
+            # Load the files in this directory
+            for path in all_paths:
+                file_path = f'{visit_dir}/{path}'
 
-            # Format the records
-            records = [response_model.parse_obj(x) for x in data]
-            primary_keys = [getattr(x, primary_key) for x in records]
+                # Don't visit the same file 2x
+                if file_path in self.state[data_source]:
+                    console.log(f'Already loaded contents from {file_path} to the db')
+                    progress.advance(task)
+                    continue
+
+                # get the raw data
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+
+                # Format the records
+                records = [response_model.parse_obj(x) for x in data]
+                primary_keys = [getattr(x, primary_key) for x in records]
 
 
-            # Get records which already exist
-            query = self.session.query(getattr(orm_model, primary_key))\
-                .where(getattr(orm_model, primary_key).in_(primary_keys))
+                # Get records which already exist
+                query = self.session.query(getattr(orm_model, primary_key))\
+                    .where(getattr(orm_model, primary_key).in_(primary_keys))
 
-            existing_records: set = {x[0] for x in query.all()}
+                existing_records: set = {x[0] for x in query.all()}
 
-            # Don't include records which already exist in the db
-            orm_records = [orm_model(**x.dict()) for x in records
-                if getattr(x, primary_key) not in existing_records
-            ]
+                # Don't include records which already exist in the db
+                orm_records = [orm_model(**x.dict()) for x in records
+                    if getattr(x, primary_key) not in existing_records
+                ]
 
-            self.session.bulk_save_objects(orm_records)
-            self.session.commit()
+                self.session.bulk_save_objects(orm_records)
+                self.session.commit()
 
-            # You've been here
-            self.state[data_source][file_path] = datetime.now(tz=timezone.utc)
-            self.save_state()
-            print(f'Done saving contents from {file_path} to the db')
+                # You've been here
+                self.state[data_source][file_path] = datetime.now(tz=timezone.utc)
+                self.save_state()
+                console.log(f'Done saving contents from {file_path} to the db')
+                progress.advance(task)

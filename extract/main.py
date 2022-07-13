@@ -10,6 +10,9 @@ from datetime import datetime, timezone
 import requests
 from typing import List
 
+from rich.progress import Progress
+from logger import console
+
 from config import NYC_OPEN_DATA_API_APP_TOKEN, data_sources
 import models
 from models.enums import DATA_SOURCES
@@ -57,6 +60,10 @@ def extract_data(
         data_source: name of a data source you'd like to extract
         extract_start_time: (optional) lower bound limit to begin extraction
         extract_end_time: (optional) upper bound limit to conclude extraction
+
+    ToDo:
+        Do a count(*) on the API first to see how many records exist,
+        then pagination can be neater
     """
 
     offset = 0
@@ -70,23 +77,28 @@ def extract_data(
     api_endpoint = data_sources[data_source]["api_endpoint"]
     response_model = data_sources[data_source]["response_model"]
 
-    all_records = []
-    while True:
+    with console.status(f"[magenta]Extracting data for {data_source=}") as status:
 
-        results = session.get(api_endpoint, params=params)
-        data = results.json()
+        all_records = []
+        while True:
+            console.log(f'Querying {data_source=} with the following params: {params}')
 
-        # clean em up
-        records = [response_model.parse_obj(x) for x in data]
+            results = session.get(api_endpoint, params=params)
+            data = results.json()
 
-        # No records, you are at the end
-        if not records:
-            break
+            # clean em up
+            records = [response_model.parse_obj(x) for x in data]
 
-        all_records.extend(records)
+            # No records, you are at the end
+            if not records:
+                break
 
-        # Increase the offset count
-        params["$offset"] += increments
+            all_records.extend(records)
+
+            # Increase the offset count
+            params["$offset"] += increments
+            if params["$offset"]> 150_000:
+                break
 
     # How many records u got?
     return all_records
@@ -114,14 +126,20 @@ def save_data(data_source: DATA_SOURCES, records: List):
 
     i = 1
     n_records_per_file = 50_000
-    while records:
-        file_path = f'{save_path}_part_{i}.json'
-        with open(file_path, 'w') as f:
-            json.dump(records[:n_records_per_file], f, default=str)
+    n_files = -(len(records)/-n_records_per_file)
 
-        # Iterate
-        if n_records_per_file >= len(records):
-            break
-        else:
-            records = records[n_records_per_file:]
-            i += 1
+    with Progress(console=console) as progress:
+        task = progress.add_task(f"Saving data (locally) for {data_source=}", total=n_files)
+        while records:
+            file_path = f'{save_path}_part_{i}.json'
+            console.log(f'Saving file {i} to {file_path}')
+            with open(file_path, 'w') as f:
+                json.dump(records[:n_records_per_file], f, default=str)
+
+            progress.advance(task)
+            # Iterate
+            if n_records_per_file >= len(records):
+                break
+            else:
+                records = records[n_records_per_file:]
+                i += 1
