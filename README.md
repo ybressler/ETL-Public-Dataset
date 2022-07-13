@@ -69,7 +69,7 @@ export PROJECT_PATH="$PWD"
 ```bash
 bash database/migrations_manager/run_alembic.sh -m "first migration" -u -r
 ```
-> For more details on how this works: [database/migrations_manager](database/migrations_manager/readMe.md)
+> For more details on how this works: [database/migrations_manager](database/migrations_manager)
 
 9. You are now ready to run the extract service! Execute the main executable
 and follow the prompts. (The program is kind of smart enough not to do the
@@ -86,9 +86,9 @@ for a NoSql DB. But not yet ready for a RDBMS.
 
 ---
 # About the Data
-Relevant resources:
-  * [Pydantic Models](models/)
-  * [ORM Models](database/models/)
+Light transformations are done in the following models/layers:
+  * Pydantic Models: [`models`](models)
+  * ORM Models: [`database.models`](database/models)
 
 ### Motor Vehicle Collisions - Crashes
 The Motor Vehicle Collisions crash table contains details on the crash event.
