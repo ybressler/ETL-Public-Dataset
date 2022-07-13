@@ -11,7 +11,7 @@ import requests
 from typing import List
 
 from rich.progress import Progress
-from logger import console
+from logger import LOGGER, console
 
 from config import NYC_OPEN_DATA_API_APP_TOKEN, data_sources
 import models
@@ -51,7 +51,8 @@ def get_min_and_max_dates(session: requests.Session):
 def extract_data(
     data_source: DATA_SOURCES,
     extract_start_time: datetime = None,
-    extract_end_time: datetime = None
+    extract_end_time: datetime = None,
+    limit: int = None
     ) -> List:
     """
     Extract data from a given data source.
@@ -60,6 +61,8 @@ def extract_data(
         data_source: name of a data source you'd like to extract
         extract_start_time: (optional) lower bound limit to begin extraction
         extract_end_time: (optional) upper bound limit to conclude extraction
+        limit: (optional) stop after extracting these many records. (Useful
+            for testing.)
 
     ToDo:
         Do a count(*) on the API first to see how many records exist,
@@ -81,7 +84,7 @@ def extract_data(
 
         all_records = []
         while True:
-            console.log(f'Querying {data_source=} with the following params: {params}')
+            LOGGER.info(f'Querying {data_source=} with the following params: {params}')
 
             results = session.get(api_endpoint, params=params)
             data = results.json()
@@ -97,7 +100,9 @@ def extract_data(
 
             # Increase the offset count
             params["$offset"] += increments
-            if params["$offset"]> 150_000:
+
+            # Stop if you exceed the limit
+            if limit is not None and params["$offset"] > limit:
                 break
 
     # How many records u got?
@@ -132,7 +137,7 @@ def save_data(data_source: DATA_SOURCES, records: List):
         task = progress.add_task(f"Saving data (locally) for {data_source=}", total=n_files)
         while records:
             file_path = f'{save_path}_part_{i}.json'
-            console.log(f'Saving file {i} to {file_path}')
+            LOGGER.info(f'Saving file {i} to {file_path}')
             with open(file_path, 'w') as f:
                 json.dump(records[:n_records_per_file], f, default=str)
 

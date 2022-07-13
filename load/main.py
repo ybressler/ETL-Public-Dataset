@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 from rich.progress import Progress
-from logger import console
+from logger import LOGGER, console
 
 
 import models
@@ -16,7 +16,7 @@ from database import ConnectDb
 from database import models as db_models
 
 
-models_mappings = {
+orm_models_mappings = {
     "crashes": {
         "orm_model": db_models.crashes.CrashRecord,
         "primary_key": "collision_id"
@@ -74,14 +74,23 @@ class Loader:
             end_time: upper bound limit to include files from
         """
 
+        if data_source not in orm_models_mappings:
+            LOGGER.warning(
+                f"\"{data_source}\" has not been configured in the ORM yet. "
+                f"Data is available locally, but cannot be loaded into the "
+                f"database until later. Sorry about that."
+            )
+            return
+
+
         # Set up state properly
         if data_source not in self.state:
             self.state[data_source] = {}
 
         # Get the models to be used
         response_model = data_sources[data_source]["response_model"]
-        orm_model = models_mappings[data_source]["orm_model"]
-        primary_key = models_mappings[data_source]["primary_key"]
+        orm_model = orm_models_mappings[data_source]["orm_model"]
+        primary_key = orm_models_mappings[data_source]["primary_key"]
 
         # Get all the extraction dates for this data source
         base_path = f'data/{data_source}'
@@ -108,7 +117,7 @@ class Loader:
 
                 # Don't visit the same file 2x
                 if file_path in self.state[data_source]:
-                    console.log(f'Already loaded contents from {file_path} to the db')
+                    LOGGER.info(f'Already loaded contents from {file_path} to the db')
                     progress.advance(task)
                     continue
 
@@ -138,5 +147,5 @@ class Loader:
                 # You've been here
                 self.state[data_source][file_path] = datetime.now(tz=timezone.utc)
                 self.save_state()
-                console.log(f'Done saving contents from {file_path} to the db')
+                LOGGER.info(f'Done saving contents from {file_path} to the db')
                 progress.advance(task)

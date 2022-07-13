@@ -128,3 +128,5 @@ Check out other cool open datasets available on
 6. Create an alternative to main executable (`main.py`) which allows arguments to
 be passed on the CLI (default can still be `rich` prompts, but would be beneficial
 to have fully automated version.)
+7. Allow passing of `extract start date` and `extract end date` in extraction.
+(Right now, it's just pretty.) 
