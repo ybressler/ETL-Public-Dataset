@@ -115,4 +115,16 @@ goes back to April 2016 when crash reporting switched to an electronic system.
 ### Additional Info:
 Check out other cool open datasets available on
 [NYC Open Data](https://data.cityofnewyork.us/browse?limitTo=datasets&q=).
+
 ----
+
+
+## ToDo:
+1. Create UnitTests for a whole bunch of stuff
+2. Enable ORM models to work with other relational databases (sqllite, MySql, Snowflake?)
+3. Enable load operation to work with non-relational databases (mongoDB)
+4. Aysncronous API calls (dramatically improve extraction)
+5. Skip saving to local files, instead, go right on to DB. (minimize IO)
+6. Create an alternative to main executable (`main.py`) which allows arguments to
+be passed on the CLI (default can still be `rich` prompts, but would be beneficial
+to have fully automated version.)
