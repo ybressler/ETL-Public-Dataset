@@ -1,7 +1,5 @@
 """
 Entry point for the application
-
-
 """
 from logger import LOGGER, console
 from extract import main
@@ -62,7 +60,7 @@ console.print(Panel(chosen_msg), style="bold green")
 
 if __name__ =='__main__':
 
-    # Eventually, will allow all sources
+    
     for key in chosen_datasets:
 
 
@@ -99,4 +97,4 @@ if __name__ =='__main__':
         loader = Loader()
         loader.load_data(key)
 
-        console.log(f'Done loading data into the DB for dataset={key}', style="bold green")
+        console.print(Panel(f'Done loading data into the DB for dataset={key}', style="bold green"))
