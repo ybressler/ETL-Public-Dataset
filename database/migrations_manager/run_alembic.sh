@@ -13,6 +13,8 @@ do
 done
 
 
+# Make the version directory if it doesn't exist
+# mkdir -p database/migrations_manager/alembic/versions
 
 if $migrate; then
   alembic -c database/migrations_manager/alembic.ini revision --autogenerate -m "$message"
