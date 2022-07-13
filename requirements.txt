@@ -1,6 +1,7 @@
 alembic==1.8.0
 certifi==2022.6.15
 charset-normalizer==2.1.0
+commonmark==0.9.1
 greenlet==1.1.2
 idna==3.3
 importlib-metadata==4.12.0
@@ -9,7 +10,9 @@ Mako==1.2.1
 MarkupSafe==2.1.1
 psycopg2==2.9.3
 pydantic==1.9.1
+Pygments==2.12.0
 requests==2.28.1
+rich==12.5.1
 SQLAlchemy==1.4.39
 typing-extensions==4.3.0
 urllib3==1.26.10
