@@ -16,37 +16,38 @@ pip install -r requirements.txt
 4. Create an APP token (similar to API token) which will be used to
 get data from the NYC Open Data API:
 
-  a. Create a [NYC Open Data Account](https://data.cityofnewyork.us/login)
+    a. Create a [NYC Open Data Account](https://data.cityofnewyork.us/login)
 
-  b. Click `edit Your Profile`
+    b. Click `edit Your Profile`
 
-  c. Navigate to `Developer Settings`
+    c. Navigate to `Developer Settings`
 
-  d. Create a new App Token
+    d. Create a new App Token
 
-  e. Choose arbitrary values for each of the parameters they ask,
+    e. Choose arbitrary values for each of the parameters they ask,
     this is for your bookeeping.
 
-  f. Note the `App Token` and `Secret Token`, you will need these
-  in step 6.
+    f. Note the `App Token` and `Secret Token`, you will need these
+    in step 6.
 
 5. Create a local postgres database for the ETL program.
 
-  a. Can be any configuration you'd like. I will recommend
-  creating a new DB under the port `5430`.
+    a. Can be any configuration you'd like. I will recommend
+    creating a new DB under the port `5430`.
 
-  b. (Optional) Once instantiated, create a new `database`
+    b. (Optional) Once instantiated, create a new `database`
     object named `db`. The application is smart enough to
     create a new db object if `db` doesn't exist, but you
     may choose to err on the side of caution here.
 
-  c. No need to worry about schema, the application
+    c. No need to worry about schema, the application
     is smart enough to figure out how to proceed without it.
 
 
 6. Create required secrets:
 
     a. Create a file `secrets/local.ini`
+
     b. Add the following to that file:
     ```
     [nyc_open_data]
@@ -129,4 +130,4 @@ Check out other cool open datasets available on
 be passed on the CLI (default can still be `rich` prompts, but would be beneficial
 to have fully automated version.)
 7. Allow passing of `extract start date` and `extract end date` in extraction.
-(Right now, it's just pretty.) 
+(Right now, it's just pretty.)
