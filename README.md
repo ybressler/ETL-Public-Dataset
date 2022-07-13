@@ -84,7 +84,7 @@ database. Future work will be done to include other datasets. You can, however,
 download this data (into properly transformed json records) locally. Perfect
 for a NoSql DB. But not yet ready for a RDBMS.
 
-10. You can now query your database from your database! Hoorah!
+10. You can now query your data from your database! Hoorah!
 
 ---
 # About the Data
