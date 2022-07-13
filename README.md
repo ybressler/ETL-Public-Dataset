@@ -64,6 +64,7 @@ to an environment variable `PROJECT_PATH`:
 ```bash
 export PROJECT_PATH="$PWD"
 ```
+> **Note:** All these steps should be executed from the project's root directory.
 
 8. Run migration manager (this will create all tables defined in
 [`database.models`](database/models)):
