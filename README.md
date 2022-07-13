@@ -69,6 +69,7 @@ export PROJECT_PATH="$PWD"
 8. Run migration manager (this will create all tables defined in
 [`database.models`](database/models)):
 ```bash
+mkdir -p database/migrations_manager/alembic/versions
 bash database/migrations_manager/run_alembic.sh -m "first migration" -u -r
 ```
 > For more details on how this works: [database/migrations_manager](database/migrations_manager)
